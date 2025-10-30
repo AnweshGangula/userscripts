@@ -4,7 +4,7 @@
 // @namespace    https://github.com/scambier/userscripts
 // @downloadURL  https://github.com/scambier/userscripts/raw/master/dist/obsidian-omnisearch-google.user.js
 // @updateURL    https://github.com/scambier/userscripts/raw/master/dist/obsidian-omnisearch-google.user.js
-// @version      0.3.4
+// @version      0.3.5
 // @description  Injects Obsidian notes in Google search results
 // @author       Simon Cambier
 // @match        https://google.com/*
@@ -188,7 +188,7 @@
     init.then(() => {
         // Make sure the results container is there
         if (!$(sidebarSelector)[0]) {
-            $("#rcnt").append('<div id="rhs"></div>');
+            $("#rcnt").append('<div id="rhs" class="TQc1id k5T88b vVVcqf e0KErc"></div>');
         }
         injectResultsContainer();
         injectTitle();
