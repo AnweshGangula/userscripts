@@ -58,7 +58,7 @@
         isInit();
     });
     // Obsidian logo
-    const logo = `<svg height="1em" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256">
+    const logo = `<svg height="1.2em" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256">
 <style>
 .purple { fill: #9974F8; }
 @media (prefers-color-scheme: dark) { .purple { fill: #A88BFA; } }
@@ -93,13 +93,13 @@
                     const url = `obsidian://open?vault=${encodeURIComponent(item.vault)}&file=${encodeURIComponent(item.path)}`;
                     const element = $(`
           <div class="MjjYud" data-omnisearch-result>
-          <div class="g Ww4FFb vt6azd tF2Cxc asEBEc" style="width: 100%">
+          <div class="g Ww4FFb tF2Cxc" style="width: 100%">
             <div class="N54PNb BToiNc cvP2Ce">
               <div class="kb0PBd cvP2Ce jGGQ5e">
                 <div class="yuRUbf">
                   <div>
                     <span>
-                      <a href="${url}"><br />
+                      <a href="${url}">
                         <h3 class="LC20lb MBeuO DKV0Md">${item.basename}</h3>
                         <div class="notranslate TbwUpd NJjxre iUh30 ojE3Fb">
                           <div class="q0vns">
@@ -137,9 +137,9 @@
               </div>
             </div>
           </div>
-        </div>        
+        </div>
         `);
-                    resultsDiv.append(element);
+                    $("#OmnisearchResultsList").append(element);
                 }
             },
             onerror: function (res) {
@@ -155,24 +155,32 @@
     function injectTitle() {
         const id = "OmnisearchObsidianConfig";
         if (!$("#" + id)[0]) {
-            const btn = $(`<div style="margin-bottom: 1em">
-          <span style="font-size: 18px">${logo}&nbspOmnisearch results</span>
+            const btn = $(`${logo}
+          <span style="font-size: 18px">&nbsp;Omnisearch results</span>
           <span style="font-size: 12px">(<a id=${id} class="feedback-link-btn" title="Settings" href="#">settings</a>)</span>
-        </div>`);
-            $(`#${resultsDivId}`).append(btn);
-            $(document).on("click", "#" + id, function () {
+        `);
+            $(`#OmnisearchHeader`).append(btn); // Target the header span
+            $(document).on("click", "#" + id, function (e) {
+                e.preventDefault(); // Prevent collapse when clicking settings
                 gmc.open();
             });
         }
     }
     function injectResultsContainer() {
-        const resultsDiv = $(`<div id="${resultsDivId}" style="margin-bottom: 2em;"></div>`);
+        const resultsDiv = $(`
+        <details id="${resultsDivId}" style="--omni-spacing: 1em;margin-bottom: 2em;border: 1px solid rgb(255,255,255,0.1);border-radius: 1em;padding: 0.5em 1em;" open>
+            <summary style="cursor: pointer;outline: none;border-bottom: 1px solid rgb(255,255,255,0.1);padding-bottom: 4px;">
+                <span id="OmnisearchHeader" style=" display: inline-flex; align-items: center; gap: 0.5em;"></span>
+            </summary>
+            <div id="OmnisearchResultsList" style="margin-top: var(--omni-spacing);display: flex;flex-direction: column;gap: var(--omni-spacing)"></div>
+        </details>
+    `);
         $(sidebarSelector).prepend(resultsDiv);
     }
     function injectLoadingLabel() {
         if (!$("#" + loadingSpanId)[0]) {
             const label = $(`<span id=${loadingSpanId}>Loading...</span>`);
-            $(`#${resultsDivId}`).append(label);
+            $(`#OmnisearchResultsList`).append(label);
         }
     }
     function removeLoadingLabel(foundResults = true) {
