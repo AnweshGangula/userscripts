@@ -112,19 +112,20 @@
             },
             onload: function (res) {
                 let data = JSON.parse(res.response);
-
-                // --- Apply Score Filtering ---
-                if (filterZeros) {
+                if (gmc.get("filterZeros")) {
                     data = data.filter(item => item.score > 0);
                 }
-
-                removeLoadingLabel(data.length > 0);
-                // Keep the x first results
-                data.splice(nbResults);
                 const resultsDiv = $(`#${resultsDivId}`);
                 // Delete all existing data-omnisearch-result
                 resultsDiv.empty();
                 $("[data-omnisearch-result]").remove();
+
+                // 2. Decide if we show "No results" or the actual data
+                if (data.length === 0) {
+                    removeLoadingLabel(false);
+                } else {
+                    removeLoadingLabel(true);
+                    data.splice(nbResults);
                 // Inject results
                 for (const item of data) {
                     const url = `obsidian://open?vault=${encodeURIComponent(item.vault)}&file=${encodeURIComponent(item.path)}`;
@@ -178,6 +179,7 @@
           `);
                     resultsDiv.append(element);
                 }
+            }
             },
             onerror: function (res) {
                 console.log("Omnisearch error", res);
@@ -222,10 +224,18 @@
         }
     }
     function removeLoadingLabel(foundResults = true) {
+        const resultsDiv = $(`#${resultsDivId}`);
+        let span = $("#" + loadingSpanId);
+
         if (foundResults) {
-            $("#" + loadingSpanId).remove();
+            span.remove();
         } else {
-            $("#" + loadingSpanId).text("No results found");
+            // If the span was deleted by .empty(), recreate it
+            if (span.length === 0) {
+                resultsDiv.append(`<span id="${loadingSpanId}" style="color: #70757a;">No results found</span>`);
+            } else {
+                span.text("No results found").show();
+            }
         }
     }
     console.log("Loading Omnisearch injector");
