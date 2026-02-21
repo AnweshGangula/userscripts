@@ -73,6 +73,10 @@
                     padding: 0 2px;
                     border-radius: 2px;
                 }
+                .omnisearch-excerpt-container {
+                    height: 100px;
+                    overflow: auto;
+                }
             `;
 
             $("<style>").text(styleBlock).appendTo("head");
@@ -83,6 +87,75 @@
          */
         getVar(name) {
             return `var(--${this.prefix}-${name})`;
+        }
+    }
+
+    /**
+     * Decodes HTML entities and Unicode escape sequences into raw characters.
+     * * This utility uses the browser's native textarea parsing to convert 
+     * strings like "&lt;br&gt;" or "\u003C" back into their literal 
+     * representations (e.g., "<br>" or "<").
+     * * @param {string} html - The encoded HTML string from the API.
+     * @returns {string} The decoded string containing literal HTML tags and symbols.
+     */
+    function decodeHtml(html) {
+        // 1. Create a dummy element in memory (not added to the page)
+        const txt = document.createElement("textarea");
+        // 2. Put the encoded string into the innerHTML
+        // The browser automatically translates entities here
+        txt.innerHTML = html;
+        // 3. Retrieve the "value," which is now the decoded plain text
+        return txt.value;
+    }
+
+    /**
+     * A security utility for sanitizing HTML strings using a whitelist-based DOM traversal.
+     * * This class parses HTML into an inert document fragment and reconstructs it, 
+     * stripping all event handlers (onclick, etc.), unauthorized attributes, 
+     * and dangerous tags (script, object, etc.).
+     */
+    class SecurityScanner {
+        // Only allow these tags
+        allowedTags = ['BR', 'MARK', 'B', 'I', 'U', 'EM', 'STRONG', 'CODE'];
+
+        /**
+         * Sanitizes HTML string by removing any tags not in the whitelist 
+         * and stripping all event handlers/attributes.
+         */
+        sanitize(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const cleanContainer = document.createElement('div');
+
+            // Recursively process nodes
+            this.processNode(doc.body, cleanContainer);
+
+            return cleanContainer.innerHTML;
+        }
+
+        processNode(source, destination) {
+            source.childNodes.forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    destination.appendChild(document.createTextNode(node.textContent || ''));
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    const el = node;
+                    const tagName = el.tagName.toUpperCase();
+
+                    if (this.allowedTags.includes(tagName)) {
+                        const newEl = document.createElement(tagName);
+                        // Copy text content but NOT attributes like 'onerror' or 'onclick'
+                        // We only allow specific safe styles if needed
+                        if (tagName === 'MARK') {
+                            newEl.className = 'omnisearch-mark';
+                        }
+                        this.processNode(el, newEl);
+                        destination.appendChild(newEl);
+                    } else {
+                        // If tag is forbidden (like <script>), just process its children as text
+                        this.processNode(el, destination);
+                    }
+                }
+            });
         }
     }
 
@@ -150,17 +223,17 @@
      */
     function highlightText(text, words) {
         if (!words || words.length === 0) return text;
-        
-        // Sort words by length descending to prevent partial replacements (e.g., 'plugin' before 'plugins')
-        const sortedWords = [...new Set(words)].sort((a, b) => b.length - a.length);
-        
+
+        // We no longer "clean" the excerpt by replacing <br> with spaces
+        // unless you explicitly want to remove line breaks.
         let highlighted = text;
+
+        const sortedWords = [...new Set(words)].sort((a, b) => b.length - a.length);
+
         for (const word of sortedWords) {
-            // Escape special regex characters in the word
             const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            // Use word boundaries \b to ensure we don't mark inside HTML tags or partial matches incorrectly
+            // The regex remains the same, but it will now execute against the raw HTML string
             const regex = new RegExp(`\\b(${escapedWord})\\b`, 'gi');
-            // Use the injected class instead of hardcoded styles
             highlighted = highlighted.replace(regex, `<mark class="omnisearch-mark">$1</mark>`);
         }
         return highlighted;
@@ -204,10 +277,12 @@
                 // Inject results
                 for (const item of data) {
                     const url = `obsidian://open?vault=${encodeURIComponent(item.vault)}&file=${encodeURIComponent(item.path)}`;
-                    
-                    // Prepare highlighted excerpt
-                    const cleanExcerpt = item.excerpt.replaceAll("<br />", " ").replaceAll("<br>", " ");
-                    const highlightedExcerpt = highlightText(cleanExcerpt, item.foundWords);
+
+                    const scanner = new SecurityScanner();
+                    // Inside the loop:
+                    const rawHtml = decodeHtml(item.excerpt);
+                    const safeHtml = scanner.sanitize(rawHtml); // <--- Scripts are killed here
+                    const finalHtml = highlightText(safeHtml, item.foundWords);
 
                     const element = $(`
           <div class="MjjYud" data-omnisearch-result>
@@ -247,14 +322,14 @@
                   </div>
                 </div>
                 <div class="kb0PBd cvP2Ce">
-                  <div class="VwiC3b yXK7lf lyLwlc yDYNvb W8l4ac lEBKkf" style="-webkit-line-clamp: 3">
-                    <span>${highlightedExcerpt}</span>
-                  </div>
+                <div class="omnisearch-excerpt-container VwiC3b yXK7lf lyLwlc yDYNvb W8l4ac lEBKkf" style="-webkit-line-clamp: 3">
+                </div>
                 </div>
               </div>
             </div>
           </div>
           `);
+                    element.find(".omnisearch-excerpt-container").html(finalHtml);
                     resultsDiv.append(element);
                 }
             }
