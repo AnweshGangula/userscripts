@@ -44,6 +44,11 @@
                 type: "int",
                 default: 3,
             },
+            filterZeros: {
+                label: "Filter zero-score results",
+                type: "checkbox",
+                default: true,
+            }
         },
         events: {
             save: () => {
@@ -91,6 +96,7 @@
     function omnisearch() {
         const port = gmc.get("port");
         const nbResults = gmc.get("nbResults");
+        const filterZeros = gmc.get("filterZeros");
         // Extract the ?q= part of the URL with URLSearchParams
         const params = new URLSearchParams(window.location.search);
         const query = params.get("q");
@@ -105,7 +111,13 @@
                 "Content-Type": "application/json",
             },
             onload: function (res) {
-                const data = JSON.parse(res.response);
+                let data = JSON.parse(res.response);
+
+                // --- Apply Score Filtering ---
+                if (filterZeros) {
+                    data = data.filter(item => item.score > 0);
+                }
+
                 removeLoadingLabel(data.length > 0);
                 // Keep the x first results
                 data.splice(nbResults);
