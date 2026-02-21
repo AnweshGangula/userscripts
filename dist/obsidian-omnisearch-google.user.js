@@ -377,7 +377,7 @@
 
         _renderHeader() {
             const header = $(`
-                ${this.logo} <h1 style="font-size: 18px">Omnisearch</h1>
+                ${this.logo} <h1 style="font-size: 18px">Omnisearch results</h1>
                 <i style="font-size: 12px">(<a id="${APP_CONFIG.ids.trigger}" href="#">settings</a>)</i>
             `);
             $(`#${APP_CONFIG.ids.header}`).append(header);
