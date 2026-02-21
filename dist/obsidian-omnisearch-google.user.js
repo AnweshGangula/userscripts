@@ -178,7 +178,11 @@
                     method: "GET",
                     url: `http://localhost:${port}/search?q=${encodeURIComponent(query)}`,
                     headers: { "Content-Type": "application/json" },
-                    onload: (res) => resolve(JSON.parse(res.response)),
+                    onload: (res) => {
+                        const data = JSON.parse(res.response);
+                        // console.log(`Omnisearch: Received ${data.length} raw results`);
+                        resolve(data);
+                    },
                     onerror: (err) => reject(err)
                 });
             });
@@ -208,6 +212,7 @@
 
         injectContainer() {
             if (!$(this.selectors.sidebar)[0]) {
+                // console.log("UIManager: RHS sidebar not found, creating a new container...");
                 $("#rcnt").append('<div id="rhs" class="TQc1id k5T88b vVVcqf e0KErc"></div>');
             }
             const html = `
@@ -274,7 +279,7 @@
                                         <cite class="qLRx3b tjvcx GvPZzd cHaqb" title="${item.path}">
                                             ${item.path}
                                         </cite>
-                                        <span style="margin: 0; opacity: 0.8;">
+                                        <span style="margin-left: 8px; opacity: 0.8;">
                                             (${item.matches?.length || 0} matches, score ${item.score.toFixed(2)})
                                         </span>
                                     </div>
@@ -300,7 +305,7 @@
             
             this.config = new GM_config({
                 id: "ObsidianOmnisearchGoogle",
-                title: "Omnisearch in Google - Configuration",
+                title: "Omnisearch Configuration",
                 fields: {
                     port: {
                         label: "HTTP Port",
@@ -338,16 +343,25 @@
         }
 
         async init() {
+            console.log("Loading Omnisearch injector");
             await this._waitForConfig();
             this.styler.inject();
             this.ui.injectContainer();
             this.ui.renderHeader(() => this.config.open());
 
             const query = new URLSearchParams(window.location.search).get("q");
-            if (query) this.runSearch(query);
+            if (query) {
+                this.runSearch(query);
+            }
 
+            console.log("Omnisearch injector loaded successfully");
+
+            // Maintain positioning via waitForKeyElements
             waitForKeyElements(this.ui.selectors.sidebar, () => {
-                $(`#ObsidianSearchDetailsS`).prependTo(this.ui.selectors.sidebar);
+                const container = $("#ObsidianSearchDetailsS");
+                if (container.length) {
+                    container.prependTo(this.ui.selectors.sidebar);
+                }
             });
         }
 
@@ -371,7 +385,9 @@
                     results.forEach(item => container.append(this.ui.renderResult(item)));
                 }
             } catch (err) {
-                this.ui.setLoading(`Error: Omnisearch server not enabled. <a href="obsidian://open">Open Obsidian</a>.`);
+                console.error("Omnisearch error", err);
+                this.ui.setLoading(`Error: Obsidian is not running or the Omnisearch server is not enabled.
+                    <br /><a href="obsidian://open">Open Obsidian</a>.`);
             }
         }
     }
