@@ -162,7 +162,7 @@
                                 <span class="VuuXrf">Obsidian</span>
                                 <div class="byrV5b">
                                   <cite class="qLRx3b tjvcx GvPZzd cHaqb" role="text">
-                                    <span class="dyjrff ob9lvb" role="text">
+                                    <span class="dyjrff ob9lvb" role="text" title="${item.path}">
                                         ${item.path}
                                     </span>
                                   </cite>
