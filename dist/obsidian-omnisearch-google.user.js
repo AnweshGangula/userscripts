@@ -152,6 +152,9 @@
                         <a href="${url}">
                           <h3 class="LC20lb MBeuO DKV0Md">${item.basename}</h3>
                           <div class="notranslate TbwUpd NJjxre iUh30 ojE3Fb">
+                            <span style="margin-left: 8px; opacity: 0.6; font-size: 0.85em;">
+                              (${item.matches?.length || 0} matches, ${item.foundWords.length} terms, ${item.score.toFixed(2)} score)
+                            </span>
                             <div class="q0vns">
                               <span class="H9lube">
                                 <div class="eqA2re NjwKYd Vwoesf" aria-hidden="true">
