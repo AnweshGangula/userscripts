@@ -112,6 +112,7 @@
             },
             onload: function (res) {
                 let data = JSON.parse(res.response);
+                data = data.sort((a, b) => b.score - a.score) // sort least score to bottom
                 if (gmc.get("filterZeros")) {
                     data = data.filter(item => item.score > 0);
                 }
