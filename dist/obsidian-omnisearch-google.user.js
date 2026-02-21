@@ -62,6 +62,11 @@
                     border-radius: var(--${this.prefix}-border-radius);
                     padding: 0.5em 1em;
                 }
+
+                #ObsidianSearchDetailsS.omni-sticky{
+                    position: sticky;
+                    top: 5rem;
+                }
                 .omnisearch-mark {
                     background-color: var(--${this.prefix}-mark-bg);
                     color: inherit;
@@ -216,7 +221,7 @@
                 $("#rcnt").append('<div id="rhs" class="TQc1id k5T88b vVVcqf e0KErc"></div>');
             }
             const html = `
-                <details id="ObsidianSearchDetailsS" open>
+                <details id="ObsidianSearchDetailsS" class="omni-sticky" open>
                     <summary style="cursor: pointer; outline: none; border-bottom: 1px solid var(--omni-border-color); padding-bottom: 4px;">
                         <span id="OmnisearchHeader" style="display: inline-flex; align-items: center; gap: 0.5em;"></span>
                     </summary>
