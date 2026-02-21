@@ -218,8 +218,8 @@
     }
     function injectResultsContainer() {
         const resultsDetailsSummary = $(`
-        <details id="ObsidianSearchDetailsS" style="--omni-spacing: 1em;margin-bottom: 2em;border: 1px solid rgb(255,255,255,0.1);border-radius: 1em;padding: 0.5em 1em;" open>
-            <summary style="cursor: pointer;outline: none;border-bottom: 1px solid rgb(255,255,255,0.1);padding-bottom: 4px;">
+        <details id="ObsidianSearchDetailsS" style="--omni-spacing: 1em;--omni-border: var(--gS5jXb, rgb(0,0,0,0.5));margin-bottom: 2em;border: 1px solid var(--omni-border);border-radius: 1em;padding: 0.5em 1em;" open>
+            <summary style="cursor: pointer;outline: none;border-bottom: 1px solid var(--omni-border);padding-bottom: 4px;">
                 <span id="OmnisearchHeader" style=" display: inline-flex; align-items: center; gap: 0.5em;"></span>
             </summary>
             <div id="${resultsDivId}" style="margin-top: var(--omni-spacing);display: flex;flex-direction: column;gap: var(--omni-spacing)"></div>
