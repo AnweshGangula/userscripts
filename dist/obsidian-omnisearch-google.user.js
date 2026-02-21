@@ -162,7 +162,8 @@
                 </div>
               </div>
             </div>
-          </div>`);
+          </div>
+          `);
                     resultsDiv.append(element);
                 }
             },
