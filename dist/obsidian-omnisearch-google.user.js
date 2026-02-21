@@ -22,6 +22,73 @@
 /* globals GM_config, jQuery, $, waitForKeyElements */
 (function () {
     "use strict";
+
+    // --- CSS Variables ---
+    const STYLING_CONFIG = {
+        prefix: "omni", // Your custom prefix
+        variables: {
+            "spacing": "1em",
+            "border-color": "var(--gS5jXb, rgb(0,0,0,0.5))",
+            "bg-opacity": "0.1",
+            "accent-color": "#9974F8",
+            "mark-bg": "#ffd70066",
+            "border-radius": "1em"
+        }
+    };
+
+    /**
+     * Handles the injection and management of CSS custom properties.
+     * Follows SOLID by separating style concerns from logic.
+     */
+    class StyleManager {
+        prefix;
+        vars;
+
+        constructor(prefix, variables) {
+            this.prefix = prefix;
+            this.vars = variables;
+        }
+
+        /**
+         * Generates a CSS string and injects it into the document head
+         */
+        inject() {
+            const cssVariables = Object.entries(this.vars)
+                .map(([key, value]) => `--${this.prefix}-${key}: ${value};`)
+                .join("\n");
+
+            const styleBlock = `
+                :root {
+                    ${cssVariables}
+                }
+                #ObsidianSearchDetailsS {
+                    margin-bottom: 2em;
+                    border: 1px solid var(--${this.prefix}-border-color);
+                    border-radius: var(--${this.prefix}-border-radius);
+                    padding: 0.5em 1em;
+                }
+                .omnisearch-mark {
+                    background-color: var(--${this.prefix}-mark-bg);
+                    color: inherit;
+                    padding: 0 2px;
+                    border-radius: 2px;
+                }
+            `;
+
+            $("<style>").text(styleBlock).appendTo("head");
+        }
+
+        /**
+         * Returns the CSS variable string for use in inline styles if needed
+         */
+        getVar(name) {
+            return `var(--${this.prefix}-${name})`;
+        }
+    }
+
+    const styleManager = new StyleManager(STYLING_CONFIG.prefix, STYLING_CONFIG.variables);
+    styleManager.inject();
+
     // Google's right "sidebar" that will contain the results div
     const sidebarSelector = "#rhs";
     // The results div
@@ -93,7 +160,8 @@
             const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             // Use word boundaries \b to ensure we don't mark inside HTML tags or partial matches incorrectly
             const regex = new RegExp(`\\b(${escapedWord})\\b`, 'gi');
-            highlighted = highlighted.replace(regex, '<mark style="background-color: #ffd70066; color: inherit; padding: 0 2px; border-radius: 2px;">$1</mark>');
+            // Use the injected class instead of hardcoded styles
+            highlighted = highlighted.replace(regex, `<mark class="omnisearch-mark">$1</mark>`);
         }
         return highlighted;
     }
@@ -218,11 +286,11 @@
     }
     function injectResultsContainer() {
         const resultsDetailsSummary = $(`
-        <details id="ObsidianSearchDetailsS" style="--omni-spacing: 1em;--omni-border: var(--gS5jXb, rgb(0,0,0,0.5));margin-bottom: 2em;border: 1px solid var(--omni-border);border-radius: 1em;padding: 0.5em 1em;" open>
-            <summary style="cursor: pointer;outline: none;border-bottom: 1px solid var(--omni-border);padding-bottom: 4px;">
-                <span id="OmnisearchHeader" style=" display: inline-flex; align-items: center; gap: 0.5em;"></span>
+        <details id="ObsidianSearchDetailsS" open>
+            <summary style="cursor: pointer; outline: none; border-bottom: 1px solid var(--${STYLING_CONFIG.prefix}-border-color); padding-bottom: 4px;">
+                <span id="OmnisearchHeader" style="display: inline-flex; align-items: center; gap: 0.5em;"></span>
             </summary>
-            <div id="${resultsDivId}" style="margin-top: var(--omni-spacing);display: flex;flex-direction: column;gap: var(--omni-spacing)"></div>
+            <div id="${resultsDivId}" style="margin-top: var(--${STYLING_CONFIG.prefix}-spacing); display: flex; flex-direction: column; gap: var(--${STYLING_CONFIG.prefix}-spacing)"></div>
         </details>
     `);
         $(sidebarSelector).prepend(resultsDetailsSummary);
