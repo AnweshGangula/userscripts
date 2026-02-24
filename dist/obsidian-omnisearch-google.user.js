@@ -66,10 +66,13 @@
                 :root { ${cssVars} }
 
                 div#rhs > * {
-                    // add background to all sidebar elements
-                    background: var(--EpFNW);
+                    background: var(--EpFNW); /* add background to all sidebar elements */
                     z-index: 10;
                     position: relative;
+                }
+
+                .omni-no-results{
+                    color: var(--ONhrGd, rgb(0,0,0,0.5));
                 }
                 
                 #${this.config.ids.container}{
@@ -406,7 +409,7 @@
                 const rawData = await this.api.fetchResults(query);
                 const results = this.api.process(rawData);
                 container.empty();
-                if (!results.length) return container.html("No results found");
+                if (!results.length) return container.html("<div class='omni-no-results'>No results found</div>");
                 results.forEach(res => container.append(this.ui.renderResult(res)));
             } catch (err) {
                 console.error("Omnisearch error", err);
