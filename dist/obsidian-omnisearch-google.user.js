@@ -70,6 +70,7 @@
                     display: flex;
                     flex-direction: column;
                     gap: var(--omni-spacing)
+                    color: var(--omni-border-color);
                 }
                 
                 details#${this.config.ids.details} {
