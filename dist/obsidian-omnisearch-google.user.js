@@ -64,6 +64,13 @@
 
             const css = `
                 :root { ${cssVars} }
+
+                div#rhs > * {
+                    // add background to all sidebar elements
+                    background: var(--EpFNW);
+                    z-index: 10;
+                    position: relative;
+                }
                 
                 #${this.config.ids.container}{
                     margin-top: var(--omni-spacing);
@@ -100,11 +107,7 @@
                     border-radius: var(--${this.prefix}-border-radius);
                     padding: 0.5em 1em;
                 }
-
-                #${this.config.ids.details}.omni-sticky{
-                    position: sticky;
-                    top: 5rem;
-                }
+                
                 #${this.config.ids.header} {
                     display: inline-flex;
                     align-items: center;
