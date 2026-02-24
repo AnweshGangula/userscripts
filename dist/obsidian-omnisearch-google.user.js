@@ -2,8 +2,8 @@
 // ==UserScript==
 // @name         Obsidian Omnisearch in Google
 // @namespace    https://github.com/scambier/userscripts
-// @downloadURL  https://github.com/anweshgangula/userscripts/raw/master/dist/obsidian-omnisearch-google.user.js
-// @updateURL    https://github.com/anweshgangula/userscripts/raw/master/dist/obsidian-omnisearch-google.user.js
+// @downloadURL  https://github.com/anweshgangula/userscripts/raw/refactor/dist/obsidian-omnisearch-google.user.js
+// @updateURL    https://github.com/anweshgangula/userscripts/raw/refactor/dist/obsidian-omnisearch-google.user.js
 // @version      0.3.5
 // @description  Injects Obsidian notes in Google search results
 // @author       Simon Cambier
@@ -64,6 +64,14 @@
 
             const css = `
                 :root { ${cssVars} }
+                
+                #${this.config.ids.container}{
+                    margin-top: var(--omni-spacing);
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--omni-spacing)
+                }
+                
                 details#${this.config.ids.details} {
                     margin-bottom: 2em;
                     border: 1px solid var(--${this.config.prefix}-border-color);
@@ -136,6 +144,10 @@
                     font-size: 0.85em;
                     color: #70757a;
                     flex-direction: column;
+                }
+                .omni-metrics{
+                    margin-left: 8px;
+                    opacity: 0.8;
                 }
             `;
             $("<style>").text(css).appendTo("head");
@@ -256,10 +268,7 @@
             const html = `
                 <details id="${this.cfg.ids.details}" class="omni-sticky" open>
                     <summary><span id="${this.cfg.ids.header}"></span></summary>
-                    <div
-                        id="${this.cfg.ids.container}"
-                        style="margin-top: var(--omni-spacing); display: flex; flex-direction: column; gap: var(--omni-spacing)"
-                    ></div>
+                    <div id="${this.cfg.ids.container}"></div>
                 </details>`;
             $(this.cfg.selectors.sidebar).prepend(html);
         }
@@ -296,7 +305,7 @@
                                 <cite class="qLRx3b tjvcx GvPZzd cHaqb"  title="${item.path}">
                                     ${item.path}
                                 </cite>
-                                <span style="margin-left: 8px; opacity: 0.8">(${item.matches?.length || 0} matches, score ${item.score.toFixed(2)})</span>
+                                <span class="omni-metrics">(${item.matches?.length || 0} matches, score ${item.score.toFixed(2)})</span>
                             </div>
                         </div>
                         <div class="kb0PBd cvP2Ce">
@@ -349,7 +358,7 @@
                     save: () => {
                         location.reload();
                     },
-                    init: () => { },
+                    init: () => {},
                 },
             });
         }
