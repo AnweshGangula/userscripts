@@ -336,7 +336,7 @@
         }
 
         _setupConfig() {
-            const config = GM_config({
+            const config = new GM_config({
                 id: "ObsidianOmnisearchGoogle",
                 title: "Omnisearch Configuration",
                 fields: {
@@ -365,24 +365,37 @@
                     save: () => location.reload(),
                     init: () => {},
                     open: (doc) => {
-                        // 1. Target the parent window (Google page)
-                        const closeConfig = (e) => {
-                            config.close();
-                            window.removeEventListener('click', closeConfig);
-                        };
+                        const iframe = document.getElementById(config.id);
+                        if (!iframe || document.getElementById("omni-config-backdrop")) return;
 
-                        // 2. Add listener to parent document
-                        // setTimeout prevents the click that opens the settings from immediately closing it
-                        setTimeout(() => {
-                            window.addEventListener('click', closeConfig);
-                        }, 0);
+                        // 1. Create the backdrop as a sibling, not a parent
+                        const backdrop = document.createElement('div');
+                        backdrop.id = "omni-config-backdrop";
 
-                        // 3. Prevent clicks INSIDE the iframe from bubbling up and closing it
-                        doc.addEventListener('click', (e) => {
-                            e.stopPropagation();
+                        // Match the Z-index to be exactly one less than the iframe
+                        const iframeZ = parseInt(window.getComputedStyle(iframe).zIndex) || 9999;
+
+                        Object.assign(backdrop.style, {
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                            backdropFilter: 'blur(2px)',
+                            zIndex: iframeZ - 1
                         });
+
+                        document.body.insertBefore(backdrop, iframe);
+
+                        // 2. Simple Close Logic
+                        backdrop.addEventListener('click', () => config.close());
+                    },
+                    close: () => {
+                        const backdrop = document.getElementById("omni-config-backdrop");
+                        if (backdrop) backdrop.remove();
                     }
-                },
+                }
             });
             return config;
         }
