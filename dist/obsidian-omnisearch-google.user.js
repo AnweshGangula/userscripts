@@ -336,7 +336,7 @@
         }
 
         _setupConfig() {
-            return new GM_config({
+            const config = GM_config({
                 id: "ObsidianOmnisearchGoogle",
                 title: "Omnisearch Configuration",
                 fields: {
@@ -362,12 +362,29 @@
                     }
                 },
                 events: {
-                    save: () => {
-                        location.reload();
-                    },
+                    save: () => location.reload(),
                     init: () => {},
+                    open: (doc) => {
+                        // 1. Target the parent window (Google page)
+                        const closeConfig = (e) => {
+                            config.close();
+                            window.removeEventListener('click', closeConfig);
+                        };
+
+                        // 2. Add listener to parent document
+                        // setTimeout prevents the click that opens the settings from immediately closing it
+                        setTimeout(() => {
+                            window.addEventListener('click', closeConfig);
+                        }, 0);
+
+                        // 3. Prevent clicks INSIDE the iframe from bubbling up and closing it
+                        doc.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                        });
+                    }
                 },
             });
+            return config;
         }
 
         async init() {
