@@ -445,7 +445,8 @@
             } catch (err) {
                 console.error("Omnisearch error", err);
                 container.html(`Error: Obsidian is not running or the Omnisearch server is not enabled.
-                    <br /><a href="obsidian://open">Open Obsidian</a>.`);
+                    <br /><a href="obsidian://open">Open Obsidian</a>
+                    <br /><a href="obsidian://show-plugin?id=omnisearch">Open Omnisearch</a>`);
             }
         }
 
