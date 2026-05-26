@@ -73,6 +73,11 @@
 
                 .omni-no-results{
                     color: var(--ONhrGd, rgb(0,0,0,0.5));
+                    margin-bottom: 1rem;
+                }
+                .omni-error{
+                    color: var(--ywz01c, rgb(200,0,0,0.5));
+                    margin-bottom: 1rem;
                 }
                 
                 #${this.config.ids.container}{
@@ -435,18 +440,38 @@
         }
 
         async runSearch(query) {
-            const container = $(`#${APP_CONFIG.ids.container}`).html("Loading...");
+            const $container = $(`#${APP_CONFIG.ids.container}`);
+
+            // Helper to update container content safely
+            const updateUI = (content) => $container.html(content);
+
+            // Initial state
+            updateUI("Loading...");
+
             try {
                 const rawData = await this.api.fetchResults(query);
                 const results = this.api.process(rawData);
-                container.empty();
-                if (!results.length) return container.html("<div class='omni-no-results'>No results found</div>");
-                results.forEach(res => container.append(this.ui.renderResult(res)));
+                $container.empty();
+
+                if (!results || results.length === 0) {
+                    return updateUI(`
+                <div class='omni-no-results'>No results found.</div>
+                <a href="obsidian://open">Open Obsidian</a>
+            `);
+                }
+
+                // Render results efficiently by joining strings
+                const html = results.map(res => this.ui.renderResult(res)).join('');
+                updateUI(html);
+
             } catch (err) {
-                console.error("Omnisearch error", err);
-                container.html(`Error: Obsidian is not running or the Omnisearch server is not enabled.
-                    <br /><a href="obsidian://open">Open Obsidian</a>
-                    <br /><a href="obsidian://show-plugin?id=omnisearch">Open Omnisearch</a>`);
+                console.error("Omnisearch error:", err);
+                updateUI(`
+            <div class="omni-error">
+                Error: Obsidian is not running or the server is disabled.
+            </div>
+            <a href="obsidian://open">Open Obsidian</a>
+        `);
             }
         }
 
